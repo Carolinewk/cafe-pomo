@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Café Pomo · icon</title>
+<style>
+  html, body { margin: 0; background: transparent; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<!-- Renders the app icon. ?size=180 for the iOS icon, ?size=512&mask=1 for the maskable one.
+     Open with a 1x device pixel ratio and save the canvas (or screenshot it). -->
+<canvas id="c"></canvas>
+<script type="module">
+  import { renderCoffee } from '../js/art/coffees.js';
+  import { Ring } from '../js/ui/ring.js';
+  const q = new URLSearchParams(location.search);
+  const size = Number(q.get('size') || 512);
+  const mask = q.has('mask');
+  const c = document.getElementById('c');
+  c.width = c.height = size;
+  const g = c.getContext('2d');
+  const bg = g.createRadialGradient(size * 0.5, size * 0.42, size * 0.05, size * 0.5, size * 0.5, size * 0.75);
+  bg.addColorStop(0, '#fde3d6');
+  bg.addColorStop(1, '#f6dccb');
+  g.fillStyle = bg;
+  g.fillRect(0, 0, size, size);
+  // keep everything inside the maskable safe zone when asked
+  const inner = mask ? size * 0.72 : size * 0.94;
+  const off = (size - inner) / 2;
+  const ringCanvas = document.createElement('canvas');
+  const ring = new Ring(ringCanvas);
+  ring.resize(inner / (window.devicePixelRatio || 1));
+  ring.draw('focus', 0.68);
+  g.drawImage(ringCanvas, off, off, inner, inner);
+  const art = renderCoffee('espresso', Math.round(inner * 1.06), { backdrop: false });
+  const s = inner * 0.98;
+  g.drawImage(art, off + (inner - s) / 2, off + (inner - s) / 2 - inner * 0.035, s, s);
+  document.title = 'ready';
+</script>
+</body>
+</html>

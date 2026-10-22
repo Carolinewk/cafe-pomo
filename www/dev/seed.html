@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Café Pomo · seed</title>
+</head>
+<body>
+<!-- Dev helper: writes a saved game and opens the app.
+     ?coins=120&owned=espresso,doppio&selected=doppio&go=../?speed=60 -->
+<script type="module">
+  import { defaultState, save } from '../js/store.js';
+  const q = new URLSearchParams(location.search);
+  const state = { ...defaultState(), welcomed: true };
+  if (q.has('coins')) state.coins = Number(q.get('coins'));
+  if (q.has('owned')) state.owned = q.get('owned').split(',');
+  if (q.has('selected')) state.selected = q.get('selected');
+  if (q.has('fresh')) state.welcomed = false;
+  save(localStorage, state);
+  location.replace(q.get('go') || '../?nosw');
+</script>
+</body>
+</html>

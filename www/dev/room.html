@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Café Pomo · room</title>
+<style>
+  body { margin: 0; background: #f4e6d6; }
+  canvas { display: block; image-rendering: pixelated; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script type="module">
+  import { drawBackground, buildProps, ROOM_W, ROOM_H, OX, OY } from '../js/world/room.js';
+  import { depthSort } from '../js/world/iso.js';
+  import { COFFEES } from '../js/catalog.js';
+  const params = new URLSearchParams(location.search);
+  const zoom = Number(params.get('zoom') || 4);
+  const hour = Number(params.get('hour') || 12);
+  const owned = Number(params.get('owned') || 12);
+  const bg = drawBackground(hour, COFFEES.slice(0, owned).map((c) => c.cup)).toCanvas();
+  const props = buildProps();
+  const c = document.getElementById('c');
+  c.width = ROOM_W; c.height = ROOM_H;
+  c.style.width = ROOM_W * zoom + 'px';
+  c.style.height = ROOM_H * zoom + 'px';
+  const g = c.getContext('2d');
+  g.drawImage(bg, 0, 0);
+  const items = props.map((p) => ({ ...p, rect: { x0: OX + p.dx, y0: OY + p.dy, x1: OX + p.dx + p.raster.w, y1: OY + p.dy + p.raster.h } }));
+  for (const it of depthSort(items)) g.drawImage(it.raster.toCanvas(), OX + it.dx, OY + it.dy);
+</script>
+</body>
+</html>

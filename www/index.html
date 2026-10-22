@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#fbf4ea">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Café Pomo">
+<meta name="description" content="Um pomodoro aconchegante: cada foco mantém uma cafeteria em pixel art funcionando e rende moedas para novos cafés.">
+<title>Café Pomo</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preload" href="fonts/Fredoka-300_700.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/PatrickHand-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app" class="phase-focus status-idle">
+  <canvas id="world" aria-hidden="true"></canvas>
+  <div class="island" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <button class="coins" id="coins" type="button" aria-label="Moedas — abrir a loja">
+      <span class="coin-icon" aria-hidden="true"></span>
+      <span id="coin-count">0</span>
+    </button>
+    <div class="phase-pill" id="phase-pill">
+      <span id="phase-name">Foco</span>
+      <span class="dots" id="dots" aria-hidden="true"></span>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn" id="open-shop" type="button" aria-label="Loja de cafés">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5V19a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 20 19v-8.5"/><path d="M3 9.2 4.6 4.5A1.5 1.5 0 0 1 6 3.5h12a1.5 1.5 0 0 1 1.4 1L21 9.2a2.6 2.6 0 0 1-4.5 1.6 2.6 2.6 0 0 1-4.5 0 2.6 2.6 0 0 1-4.5 0A2.6 2.6 0 0 1 3 9.2Z"/><path d="M9.5 20.5v-5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v5"/></svg>
+      </button>
+      <button class="icon-btn" id="open-settings" type="button" aria-label="Ajustes">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="pomodoro">
+    <div class="ring-wrap" id="ring-wrap">
+      <canvas id="ring" aria-hidden="true"></canvas>
+      <button class="coffee" id="coffee" type="button" aria-label="Trocar o café servido">
+        <canvas id="coffee-art"></canvas>
+      </button>
+      <button class="coffee-tag" id="coffee-tag" type="button">
+        <span id="coffee-name">Espresso</span>
+        <span class="tag-earn">+<span id="coffee-earn">5</span><span class="coin-icon" aria-hidden="true"></span></span>
+      </button>
+    </div>
+    <div class="time" id="time" role="timer" aria-live="off">25:00</div>
+  </main>
+
+  <div class="cafe-slot" id="cafe-slot"></div>
+
+  <nav class="controls" aria-label="Controles do pomodoro">
+    <button class="ctrl" id="reset" type="button" aria-label="Recomeçar">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.5 4v4.5H8"/></svg>
+    </button>
+    <button class="ctrl primary" id="toggle" type="button" aria-label="Começar">
+      <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10-6.5a1 1 0 0 0 0-1.7l-10-6.5A1 1 0 0 0 8 5.5Z"/></svg>
+      <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1.4"/><rect x="13.5" y="5" width="4" height="14" rx="1.4"/></svg>
+    </button>
+    <button class="ctrl" id="skip" type="button" aria-label="Pular para a próxima etapa">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5.5v13l9-6.5-9-6.5Z"/><path d="M18.5 5v14"/></svg>
+    </button>
+  </nav>
+
+  <div class="banner" id="banner" role="status" aria-live="polite" hidden>
+    <span class="banner-icon" id="banner-icon" aria-hidden="true"></span>
+    <div class="banner-text"><strong id="banner-title"></strong><span id="banner-sub"></span></div>
+  </div>
+
+  <!-- shop -->
+  <div class="sheet" id="shop" hidden>
+    <div class="sheet-backdrop" data-close></div>
+    <section class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="shop-title">
+      <div class="grabber" aria-hidden="true"></div>
+      <header class="sheet-head">
+        <h2 id="shop-title">Cardápio</h2>
+        <span class="coins static"><span class="coin-icon" aria-hidden="true"></span><span id="shop-coins">0</span></span>
+        <button class="icon-btn" type="button" data-close aria-label="Fechar">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </header>
+      <p class="sheet-sub">Cada pomodoro serve o café escolhido aos clientes e rende moedas. Junte moedas para desbloquear novas receitas.</p>
+      <div class="goal" id="shop-goal">
+        <span id="goal-text"></span>
+        <div class="goal-bar" aria-hidden="true"><i id="goal-fill"></i></div>
+      </div>
+      <div class="menu-grid" id="menu-grid"></div>
+    </section>
+  </div>
+
+  <!-- settings -->
+  <div class="sheet" id="settings" hidden>
+    <div class="sheet-backdrop" data-close></div>
+    <section class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <div class="grabber" aria-hidden="true"></div>
+      <header class="sheet-head">
+        <h2 id="settings-title">Ajustes</h2>
+        <button class="icon-btn" type="button" data-close aria-label="Fechar">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </header>
+      <div class="group" id="durations"></div>
+      <div class="group" id="toggles"></div>
+      <h3 class="group-title">Seu café em números</h3>
+      <div class="stats" id="stats"></div>
+      <button class="text-btn danger" id="reset-progress" type="button">Apagar todo o progresso</button>
+      <p class="credits">Fontes Fredoka e Patrick Hand (SIL Open Font License). Arte desenhada em código.</p>
+    </section>
+  </div>
+
+  <div class="rotate-hint" aria-hidden="true">
+    <span>Gire o celular para ver o café ☕</span>
+  </div>
+
+  <!-- small dialogs -->
+  <div class="dialog" id="dialog" hidden>
+    <div class="dialog-card" role="alertdialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-text">
+      <canvas class="dialog-art" id="dialog-art" hidden></canvas>
+      <h2 id="dialog-title"></h2>
+      <p id="dialog-text"></p>
+      <div class="dialog-actions">
+        <button class="pill-btn ghost" id="dialog-cancel" type="button">Cancelar</button>
+        <button class="pill-btn" id="dialog-ok" type="button">Ok</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

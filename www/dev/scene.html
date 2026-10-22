@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Café Pomo · scene</title>
+<style>
+  body { margin: 0; background: #f4e6d6; }
+  canvas { display: block; image-rendering: pixelated; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script type="module">
+  import { Cafe } from '../js/world/scene.js';
+  import { COFFEE_BY_ID } from '../js/catalog.js';
+  const q = new URLSearchParams(location.search);
+  const width = Number(q.get('w') || 440);
+  const cafe = new Cafe(document.getElementById('c'));
+  cafe.layout(width, width * 0.95, 8 * (width / 220));
+  cafe.setCoffee(COFFEE_BY_ID[q.get('coffee') || 'matcha_frappe']);
+  cafe.setTimerState(q.get('phase') || 'focus', q.get('status') || 'running');
+  // fast-forward the simulation so screenshots show a busy cafe
+  const warm = Number(q.get('warm') || 0);
+  for (let i = 0; i < warm * 30; i++) cafe.update(1 / 30);
+  if (q.has('celebrate')) cafe.celebrate(26);
+  if (q.get('then')) cafe.setTimerState(q.get('then'), 'running');
+  const extra = Number(q.get('extra') || 0);
+  for (let i = 0; i < extra * 30; i++) cafe.update(1 / 30);
+  cafe.render();
+  window.cafe = cafe;
+  let last = performance.now();
+  if (!q.has('still')) {
+    const loop = (now) => { cafe.update((now - last) / 1000); last = now; cafe.render(); requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+  }
+</script>
+</body>
+</html>

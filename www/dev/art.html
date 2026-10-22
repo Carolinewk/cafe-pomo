@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Café Pomo · art sheet</title>
+<style>
+  body { margin: 0; background: #f7eee3; font: 14px system-ui; color: #6d5446; }
+  .grid { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px; }
+  figure { margin: 0; text-align: center; }
+  canvas { display: block; }
+  .big canvas { width: var(--s); height: var(--s); }
+</style>
+</head>
+<body>
+<div class="grid" id="grid"></div>
+<script type="module">
+  import { renderCoffee, DRAWING_IDS } from '../js/art/coffees.js';
+  const params = new URLSearchParams(location.search);
+  const size = Number(params.get('size') || 300);
+  const only = params.get('only');
+  const ids = only ? only.split(',') : DRAWING_IDS;
+  const grid = document.getElementById('grid');
+  const t0 = performance.now();
+  const times = [];
+  for (const id of ids) {
+    const s = performance.now();
+    const c = renderCoffee(id, size * devicePixelRatio, { mono: params.has('mono'), backdrop: !params.has('nobg') });
+    times.push(`${id}:${Math.round(performance.now() - s)}ms`);
+    c.style.width = c.style.height = size + 'px';
+    const fig = document.createElement('figure');
+    fig.append(c);
+    const cap = document.createElement('figcaption');
+    cap.textContent = id;
+    fig.append(cap);
+    grid.append(fig);
+  }
+  console.log('render', Math.round(performance.now() - t0), 'ms', times.join(' '));
+</script>
+</body>
+</html>

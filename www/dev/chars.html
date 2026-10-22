@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Café Pomo · characters</title>
+<style>
+  body { margin: 0; background: #e9d9c6; }
+  canvas { display: block; image-rendering: pixelated; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script type="module">
+  import { frame, HAIR_STYLES, BARISTA, SKINS, HAIRS, TOPS, BOTTOMS } from '../js/world/chars.js';
+  const zoom = Number(new URLSearchParams(location.search).get('zoom') || 6);
+  const c = document.getElementById('c');
+  const cols = 10, cell = 20, rowsN = HAIR_STYLES.length + 1;
+  c.width = cols * cell; c.height = rowsN * 31;
+  c.style.width = c.width * zoom + 'px'; c.style.height = c.height * zoom + 'px';
+  const g = c.getContext('2d');
+  const looks = HAIR_STYLES.map((style, i) => ({ skin: SKINS[i % SKINS.length], hair: HAIRS[i % HAIRS.length], top: TOPS[i % TOPS.length], bottom: BOTTOMS[i % BOTTOMS.length], style, cap: '#e39b8f' }));
+  looks.push(BARISTA);
+  looks.forEach((look, row) => {
+    const poses = [['front','stand'],['front','walk1'],['front','walk2'],['front','sit'],['back','stand'],['back','walk1'],['back','walk2'],['back','sit'],['front','stand',['#fffaf3','#d8cfc6']],['back','stand',['#a7c97a','#6e9a49']]];
+    poses.forEach(([dir, pose, cup], col) => {
+      const r = frame(look, dir, pose, cup || null);
+      const flip = col === 2;
+      g.drawImage(r.toCanvas(), col * cell + 2, row * 31 + 1);
+    });
+  });
+</script>
+</body>
+</html>
